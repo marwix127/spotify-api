@@ -1,0 +1,115 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/*
+  ───────────────────────────────────────────
+  USERS
+  ───────────────────────────────────────────
+*/
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  password  String
+  role      String     @default("user")
+  image     String?
+  createdAt DateTime   @default(now())
+  playlists Playlist[]
+}
+
+/*
+  ───────────────────────────────────────────
+  ARTISTS
+  ───────────────────────────────────────────
+*/
+
+model Artist {
+  id       Int      @id @default(autoincrement())
+  name     String
+  image    String?
+  bio      String?
+  country  String?
+  albums   Album[]
+  songs    Song[]
+}
+
+/*
+  ───────────────────────────────────────────
+  ALBUMS
+  ───────────────────────────────────────────
+*/
+
+model Album {
+  id        Int      @id @default(autoincrement())
+  title     String
+  cover     String?
+  year      Int?
+  artistId  Int
+  artist    Artist   @relation(fields: [artistId], references: [id])
+  songs     Song[]
+  createdAt DateTime @default(now())
+}
+
+/*
+  ───────────────────────────────────────────
+  SONGS
+  ───────────────────────────────────────────
+*/
+
+model Song {
+  id        Int            @id @default(autoincrement())
+  title     String
+  duration  Int?           // duración en segundos (opcional)
+  audioUrl  String         // archivo/mp3 obligatorio
+  image     String?
+  
+  artistId  Int
+  artist    Artist         @relation(fields: [artistId], references: [id])
+
+  albumId   Int?
+  album     Album?         @relation(fields: [albumId], references: [id])
+
+  playlists PlaylistSong[]
+}
+
+/*
+  ───────────────────────────────────────────
+  PLAYLISTS
+  ───────────────────────────────────────────
+*/
+
+model Playlist {
+  id          Int            @id @default(autoincrement())
+  name        String
+  description String?
+  image       String?
+  createdAt   DateTime       @default(now())
+  
+  userId      Int
+  user        User           @relation(fields: [userId], references: [id])
+
+  songs       PlaylistSong[]
+}
+
+/*
+  ───────────────────────────────────────────
+  MANY-TO-MANY Songs ↔ Playlists
+  ───────────────────────────────────────────
+*/
+
+model PlaylistSong {
+  playlist   Playlist @relation(fields: [playlistId], references: [id])
+  playlistId Int
+
+  song       Song     @relation(fields: [songId], references: [id])
+  songId     Int
+
+  @@id([playlistId, songId]) // composite key
+}
