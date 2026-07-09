@@ -1,5 +1,5 @@
 import express from "express";
-import { getArtists, getArtistById, createArtist } from "../controllers/artistController.js";
+import { getArtists, getArtistById, createArtist, updateArtist, deleteArtist } from "../controllers/artistController.js";
 import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -8,7 +8,9 @@ const router = express.Router();
 router.get("/", getArtists);
 router.get("/:id", getArtistById);
 
-// Ruta protegida (solo admin)
+// Rutas protegidas (solo admin)
 router.post("/", authenticateToken, createArtist);
+router.put("/:id", authenticateToken, updateArtist);
+router.delete("/:id", authenticateToken, deleteArtist);
 
 export default router;
